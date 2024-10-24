@@ -159,6 +159,54 @@ function handleDelete(id){
             </div>
           </div>
         }
+        {add && 
+          <div className='modal-cont'>
+            <div className='modal-inner'>
+              <form onSubmit={handleSubmit}>
+                <div className='float-right icon' onClick={() => setAdd(false)}>
+                  <FaTimes/>
+                </div>
+                <h2 className='font-bold text-2xl mb-3 flex items-center gap-3'><FaBriefcase /> Add a new work</h2>
+                <div className='flex gap-3 items-start justify-center w-full max-sm:flex-col'>
+                <div>
+                <p>Work ab:</p>
+                <input type='text' className='input' name='ab' onChange={handleChange} required />
+                </div>
+                <div>
+                <p>Work Full name:</p>
+                <input type='text' className='input' name='name' onChange={handleChange} required />
+                </div>
+                </div>
+                <div className='flex gap-3 items-start justify-center w-full max-sm:flex-col'>
+                <div>
+                <p>Work Description:</p>
+                <input type='text' className='input' name='desc' onChange={handleChange} required />
+                </div>
+                <div>
+                <p>Work Client:</p>
+                <input type='text' className='input' name='client' onChange={handleChange} required />
+                </div>
+                </div>
+                <div className='flex gap-3 items-start justify-center w-full max-sm:flex-col'>
+                <div>
+                <p>Work start date:</p>
+                <input type='date' className='input' name='start' onChange={handleChange} required />
+                </div>
+                <div>
+                <p>Work end date:</p>
+                <input type='date' className='input' name='end' onChange={handleChange} required />
+                </div>
+                </div>
+                <p>Work technologies:</p>
+                <input type='text' className='input' name='tec' onChange={handleChange} required />
+                <p className='text-red-500'>{error}</p>
+                <button className='px-5 w-full py-3 max-sm:px-2 hover:bg-orange-200 bg-blue-200 flex items-center justify-center gap-2 rounded hover:border cursor-pointer'>
+                 <FaPlus /> Add work
+                </button>
+              </form>
+            </div>
+          </div>
+          }
       </main>
     </section>
   )
