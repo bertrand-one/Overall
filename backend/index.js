@@ -390,42 +390,46 @@ app.get("/department", (req,res) => {
      })
 })
 
-// Storage settings for multer
+// Configure Multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Save files to 'uploads' folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
-  },
-});
-
-const upload = multer({ storage: storage });
-
-// Route for image upload
-app.post('/add_department', upload.single('image'), (req, res) => {
-  const { names, type } = req.body;
-  const userId = req.session.user.id; // Assuming session is set properly
-
-  if (!req.file) {
-    return res.status(400).send({ error: 'No file uploaded.' });
-  }
-
-  const imagePath = req.file.filename; // Use filename for the image path
-  const values = [names, type, userId, imagePath];
-
-  // Store the image path and form data in the database
-  const sql = "INSERT INTO departments(`name`,`type`,`user_id`,`image`) VALUES(?, ?, ?, ?)";
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      return res.status(500).send({ error: 'Database error.' });
-    }
-    res.send({ message: 'File uploaded successfully', file: req.file.filename });
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
+    },
   });
-});
-
-// Serve static files (for accessing uploaded images)
-app.use('/uploads', express.static('uploads'));
+  const upload = multer({ storage });
+  
+  // Route for image upload
+  app.post('/add_department', upload.single('image'), (req, res) => {
+    const { name, type } = req.body;
+    const userId = req.session.user ? req.session.user.id : null;
+  
+    if (!userId) {
+      return res.status(401).send({ error: 'Unauthorized. Please log in.' });
+    }
+  
+    if (!req.file) {
+      return res.status(400).send({ error: 'No file uploaded.' });
+    }
+  
+    const imagePath = req.file.filename;
+    const values = [name, type, userId, imagePath];
+  
+    const sql = "INSERT INTO departments(`name`,`type`,`user_id`,`image`) VALUES(?, ?, ?, ?)";
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).send({ error: 'Database error.' });
+      }
+      res.send({ message: 'File uploaded successfully', file: imagePath });
+    });
+  });
+  
+  // Serve static files (for accessing uploaded images)
+  app.use('/uploads', express.static('uploads'));
+  
 
 
 

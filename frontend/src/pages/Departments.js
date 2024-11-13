@@ -8,55 +8,51 @@ const Departments = () => {
   const [data, setData] = useState([])
   const [add, setAdd] = useState(false);
   const [error, setError] = useState("");
-  const [image, setImage] = useState(null);
 
-  // Form values
-  const [values, setValues] = useState({
-    names: '',
+  const [formData, setFormData] = useState({
+    name: '',
     type: '',
+    image: null,
   });
+  const [message, setMessage] = useState('');
 
-  // Handle input changes
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setValues({ ...values, [name]: value });
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
-  // Handle image selection
-  const handleImageChange = (event) => {
-    setImage(event.target.files[0]); // Save the selected image file in state
+  const handleFileChange = e => {
+    setFormData(prevState => ({
+      ...prevState,
+      image: e.target.files[0],
+    }));
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
-    // Create a FormData object
-    const formData = new FormData();
-    formData.append('names', values.names);
-    formData.append('type', values.type);
-    formData.append('image', image); // Append the image file
+    const data = new FormData();
+    data.append('names', formData.name);
+    data.append('type', formData.type);
+    data.append('image', formData.image);
 
-    // Send the data to the server
-    axios.post('/add_department', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data', // Required for file uploads
-      },
-    })
-    .then((res) => {
-      console.log(res.data.message);
-      setAdd(false);
-      // Call a function to refresh the department list (e.g., fetchDepartment())
-    })
-    .catch((err) => {
-      if (err.response && err.response.status === 400) {
-        setError(err.response.data.error); // Set error message to display in the UI
-      } else {
-        console.error('An unexpected error occurred:', err);
-        setError('An unexpected error occurred. Please try again later.');
-      }
-    });
+    try {
+      const response = await axios.post('/add_department', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setMessage(response.data.message);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setMessage('Failed to upload file.');
+    }
   };
+
+
 
 //fech Derpartment function
 const fetchDepartment = () => {
@@ -115,25 +111,25 @@ const fetchDepartment = () => {
          <div className='modal-cont'>
           <div className='modal-inner'>
             <form onSubmit={handleSubmit}>
-              <div className='float-right icon' onClick={() => setAdd(false)}>
-                <FaTimes/>
-              </div>
-              <h2 className='font-bold text-2xl mb-3 flex items-center gap-3'><FaBoxes /> new Department</h2>
-              
-              
-              <p>Department name:</p>
-              <input type='text' className='input' name='names' onChange={handleChange} required />
-              <p>Department type:</p>
-              <input type='text' className='input' name='type' onChange={handleChange} required />
-              <p>Department cover</p>
-              <input type="file" name="image" onChange={handleImageChange} />
-            
-              
-              {error && <div style={{ color: 'red' }}>{error}</div>}
-              <button className='px-5 w-full py-3 max-sm:px-2 hover:bg-orange-200 bg-blue-200 flex items-center justify-center gap-2 rounded hover:border cursor-pointer'>
-                 <FaPlus /> Add Department
-              </button>
-            </form>
+        <label>
+          Department Name:
+          <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+        </label>
+        <br />
+        <label>
+          Type:
+          <input type="text" name="type" value={formData.type} onChange={handleChange} required />
+        </label>
+        <br />
+        <label>
+          Image:
+          <input type="file" name="image" onChange={handleFileChange} required />
+        </label>
+        <br />
+        <button type="submit">Submit</button>
+      </form>
+      {message && <p>{message}</p>}
+    
           </div>
          </div>
         }
